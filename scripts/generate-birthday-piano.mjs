@@ -2,54 +2,36 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
-// An original birthday piano groove for Bukky, with a clear 4/4 pulse. Run with:
+// A piano arrangement of the familiar Happy Birthday melody for Bukky. Run with:
 // node scripts/generate-birthday-piano.mjs
 const sampleRate = 32000;
 const eighth = 60 / 96 / 2;
-const barLength = eighth * 8;
-const bars = 16;
+const barLength = eighth * 6;
+const bars = 18;
 const seconds = barLength * bars;
 const frames = Math.round(seconds * sampleRate);
 const left = new Float32Array(frames);
 const right = new Float32Array(frames);
 
-const chords = [
-  { bass: 50, notes: [57, 61, 64, 66] }, // Dmaj9
-  { bass: 47, notes: [54, 57, 61, 62] }, // Bm9
-  { bass: 43, notes: [50, 54, 57, 59] }, // Gmaj9
-  { bass: 45, notes: [52, 55, 59, 61] }, // A13
-  { bass: 42, notes: [49, 52, 56, 57] }, // F#m9
-  { bass: 47, notes: [54, 57, 60, 63] }, // B7b9
-  { bass: 40, notes: [47, 50, 54, 55] }, // Em9
-  { bass: 45, notes: [52, 55, 59, 62] }, // A7sus4
-  { bass: 50, notes: [57, 61, 64, 66] },
-  { bass: 42, notes: [49, 52, 58, 61] }, // F#7
-  { bass: 47, notes: [54, 57, 61, 64] }, // Bm11
-  { bass: 40, notes: [47, 50, 56, 61] }, // E9
-  { bass: 43, notes: [50, 54, 57, 59] },
+const verseChords = [
+  { bass: 50, notes: [57, 61, 62, 66] }, // D
   { bass: 45, notes: [52, 55, 61, 64] }, // A7
-  { bass: 50, notes: [57, 61, 64, 66] },
-  { bass: 50, notes: [57, 59, 64, 66] }  // D6/9
+  { bass: 50, notes: [57, 61, 62, 66] }, // D
+  { bass: 45, notes: [52, 55, 59, 62] }, // A7sus4
+  { bass: 50, notes: [57, 61, 62, 66] }, // D
+  { bass: 47, notes: [54, 57, 62, 66] }, // Bm7
+  { bass: 43, notes: [50, 54, 59, 62] }, // Gmaj7
+  { bass: 45, notes: [52, 55, 61, 64] }, // A7
+  { bass: 50, notes: [57, 61, 64, 66] }  // Dmaj9
 ];
+const chords = [...verseChords, ...verseChords];
 
-// Each melody item is [eighth-note position, MIDI pitch, length in eighths].
-const melody = [
-  [[0, 69, 1], [1.5, 73, 0.7], [3, 76, 1], [5.5, 74, 0.8], [7, 73, 0.7]],
-  [[0, 71, 1], [2, 69, 0.7], [3.5, 66, 0.9], [5.5, 69, 0.7], [7, 73, 0.7]],
-  [[0, 67, 1], [1.5, 71, 0.8], [3, 74, 1], [5.5, 76, 0.8], [7, 74, 0.7]],
-  [[0, 73, 0.8], [1.5, 71, 0.7], [3, 69, 1.2], [6, 76, 0.8]],
-  [[0, 69, 1], [1.5, 73, 0.7], [3, 76, 0.9], [5.5, 78, 0.8], [7, 76, 0.7]],
-  [[0, 76, 1], [2, 74, 0.7], [3.5, 72, 0.9], [5.5, 71, 0.8], [7, 74, 0.7]],
-  [[0, 71, 1], [1.5, 74, 0.8], [3, 78, 1], [5.5, 76, 0.8], [7, 74, 0.7]],
-  [[0, 76, 0.9], [1.5, 74, 0.7], [3, 73, 1], [5.5, 69, 0.8], [7, 73, 0.7]],
-  [[0, 69, 0.8], [1, 73, 0.8], [2.5, 76, 0.7], [4, 81, 1], [6.5, 78, 0.8]],
-  [[0, 80, 0.9], [1.5, 78, 0.7], [3, 76, 1], [5.5, 73, 0.8], [7, 76, 0.7]],
-  [[0, 74, 0.9], [1.5, 78, 0.8], [3, 81, 1], [5.5, 78, 0.8], [7, 76, 0.7]],
-  [[0, 76, 1], [2, 73, 0.8], [3.5, 71, 0.9], [5.5, 73, 0.8], [7, 76, 0.7]],
-  [[0, 74, 0.9], [1.5, 76, 0.7], [3, 78, 1], [5.5, 74, 0.8], [7, 71, 0.7]],
-  [[0, 73, 0.9], [1.5, 71, 0.7], [3, 69, 1], [5.5, 76, 0.8], [7, 78, 0.7]],
-  [[0, 78, 1], [1.5, 76, 0.8], [3, 73, 1], [5.5, 74, 0.8], [7, 76, 0.7]],
-  [[0, 73, 0.9], [1.5, 69, 0.8], [3, 66, 1], [5.5, 62, 0.9]]
+// [eighth-note position, MIDI pitch, length in eighths], in D major.
+const birthdayMelody = [
+  [0, 69, 0.8], [1, 69, 0.8], [2, 71, 1.8], [4, 69, 1.8], [6, 74, 1.8], [8, 73, 3.8],
+  [12, 69, 0.8], [13, 69, 0.8], [14, 71, 1.8], [16, 69, 1.8], [18, 76, 1.8], [20, 74, 3.8],
+  [24, 69, 0.8], [25, 69, 0.8], [26, 81, 1.8], [28, 78, 1.8], [30, 74, 1.8], [32, 73, 1.8], [34, 71, 3.8],
+  [38, 79, 0.8], [39, 79, 0.8], [40, 78, 1.8], [42, 74, 1.8], [44, 76, 1.8], [46, 74, 3.8]
 ];
 
 function addNote(midi, start, length, volume) {
@@ -101,20 +83,23 @@ function addSoftBeat(start, backbeat) {
 for (let bar = 0; bar < bars; bar++) {
   const chord = chords[bar];
   const at = bar * barLength;
-  // Bass on beats one and three, piano chords on two and four, light offbeat pickups.
-  addNote(chord.bass, at, eighth * 1.55, 0.23);
-  addNote(chord.bass + 12, at + eighth * 4, eighth * 1.1, 0.16);
-  addNote(chord.bass + 7, at + eighth * 7.4, eighth * 0.45, 0.075);
-  [0, 4].forEach(position => addSoftBeat(at + eighth * position, false));
-  [2, 6].forEach(position => addSoftBeat(at + eighth * position, true));
-  [2, 6].forEach((position, hit) => chord.notes.forEach((note, i) => {
-    addNote(note, at + eighth * position + i * 0.012, eighth * (hit ? 0.75 : 0.9), hit ? 0.073 : 0.088);
+  // Bright three-beat piano rhythm: low note, chord, chord.
+  addNote(chord.bass, at, eighth * 1.8, 0.21);
+  addNote(chord.bass + 7, at + eighth * 5.55, eighth * 0.4, 0.055);
+  addSoftBeat(at, false);
+  [2, 4].forEach(position => addSoftBeat(at + eighth * position, true));
+  [2, 4].forEach((position, hit) => chord.notes.forEach((note, i) => {
+    addNote(note, at + eighth * position + i * 0.012, eighth * (hit ? 0.7 : 0.85), hit ? 0.067 : 0.077);
   }));
-  [1, 5].forEach((position, i) => addNote(chord.notes[i ? 1 : 3] + 12, at + eighth * position, eighth * 0.6, 0.07));
-  [3.5, 7.25].forEach((position, i) => addNote(chord.notes[i ? 3 : 2] + 12, at + eighth * position, eighth * 0.45, 0.047));
-  melody[bar].forEach(([position, pitch, duration], i) => {
-    addNote(pitch, at + eighth * position, eighth * duration, i === 0 ? 0.19 : 0.17);
-  });
+  [1, 3, 5].forEach((position, i) => addNote(chord.notes[[2, 3, 1][i]] + 12, at + eighth * position, eighth * 0.5, 0.043));
+}
+
+for (let pass = 0; pass < 2; pass++) {
+  const offset = pass * 54;
+  for (const [position, pitch, duration] of birthdayMelody) {
+    addNote(pitch, eighth * (offset + position), eighth * duration, pass ? 0.22 : 0.2);
+    if (pass && pitch >= 74 && duration > 3) addNote(pitch - 12, eighth * (offset + position), eighth * duration, 0.045);
+  }
 }
 
 // Two quiet, short cross-channel echoes give the piano a small-room sound.
@@ -149,7 +134,7 @@ for (let i = 0; i < frames; i++) {
   wav.writeInt16LE(Math.round(Math.max(-1, Math.min(1, right[i] * scale)) * 32767), 46 + i * 4);
 }
 
-const destination = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "public", "audio", "bukky-piano-groove.wav");
+const destination = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "public", "audio", "bukky-birthday-tune.wav");
 await mkdir(path.dirname(destination), { recursive: true });
 await writeFile(destination, wav);
 console.log(`Wrote ${destination} (${seconds.toFixed(1)} seconds, ${(wav.length / 1024 / 1024).toFixed(1)} MB)`);

@@ -31,7 +31,7 @@ Edit [`birthday.config.ts`](./birthday.config.ts) to change Bukky's name, romant
 
 The generated cake illustration lives at `public/images/birthday-still-life.png`. The interactive cake, candles, envelope, gift, confetti, and fireworks are built with code.
 
-An original, rhythmic piano groove starts when Bukky presses **Begin your birthday surprise** and loops through the experience. Its audio file is `public/audio/bukky-piano-groove.wav`. To regenerate it after editing the score, run `node scripts/generate-birthday-piano.mjs`.
+A rhythmic piano arrangement of the familiar **Happy Birthday** tune starts when Bukky presses **Begin your birthday surprise** and loops through the experience. Its audio file is `public/audio/bukky-birthday-tune.wav`. To regenerate it after editing the score, run `node scripts/generate-birthday-piano.mjs`.
 
 ## Deploy to Netlify when ready
 
