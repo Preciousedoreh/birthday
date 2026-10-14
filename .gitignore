@@ -1,0 +1,9 @@
+node_modules
+.next
+out
+dist
+.vercel
+*.tsbuildinfo
+*.log
+preview-*.png
+site-bundle.zip
