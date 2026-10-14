@@ -2,7 +2,7 @@
 
 An interactive birthday website built with Next.js App Router, React, TypeScript, Tailwind CSS, Motion, and Lucide icons. The cake illustration is included; no personal photographs or external services are needed.
 
-The entrance leads to a single, non-scrolling invitation screen. Once Bukky confirms, the Happy Birthday story opens at the top and becomes scrollable.
+The entrance leads to a single, non-scrolling invitation screen, followed by a single, non-scrolling coral confession screen. Continue opens the Happy Birthday story at the top, where scrolling begins.
 
 ## Run locally
 
