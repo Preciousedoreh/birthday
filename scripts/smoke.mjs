@@ -11,7 +11,16 @@ try {
   page.on("pageerror", error => failures.push(error.message));
   await page.goto("http://127.0.0.1:3000", { waitUntil: "networkidle" });
   await page.getByRole("button", { name: /Skip intro/i }).click();
+  await page.locator(".intro").waitFor({ state: "detached" });
+  if (await page.locator("#birthday").count()) failures.push("Birthday story rendered before identity confirmation");
+  await page.mouse.wheel(0, 700);
+  await page.waitForTimeout(150);
+  const invitationScroll = await page.evaluate(() => ({ y: window.scrollY, overflow: getComputedStyle(document.documentElement).overflow }));
+  if (invitationScroll.y !== 0 || invitationScroll.overflow !== "hidden") failures.push("Invitation can scroll before confirmation");
   await page.getByRole("button", { name: /Yes, that's me/i }).click();
+  await page.locator("#birthday").waitFor({ state: "visible" });
+  const storyStart = await page.evaluate(() => ({ y: window.scrollY, scrollable: document.documentElement.scrollHeight > window.innerHeight, overflow: getComputedStyle(document.documentElement).overflow }));
+  if (storyStart.y !== 0 || !storyStart.scrollable || storyStart.overflow === "hidden") failures.push("Birthday story did not open at the top with scrolling enabled");
   await page.locator("#birthday").scrollIntoViewIfNeeded();
   await page.waitForTimeout(1200);
   await page.screenshot({ path: "preview-birthday.png" });
@@ -36,7 +45,11 @@ try {
   await mobile.screenshot({ path: "preview-mobile.png" });
   const overflows = await mobile.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   if (overflows) failures.push("Mobile has horizontal overflow");
+  await mobile.evaluate(() => window.scrollTo(0, 600));
+  if (await mobile.evaluate(() => window.scrollY !== 0)) failures.push("Mobile invitation can scroll before confirmation");
   await mobile.getByRole("button", { name: /Yes, that's me/i }).click();
+  await mobile.locator("#birthday").waitFor({ state: "visible" });
+  if (await mobile.evaluate(() => getComputedStyle(document.documentElement).overflow === "hidden")) failures.push("Mobile story remains scroll locked");
   await mobile.getByRole("button", { name: /Open your letter/i }).first().click();
   if (!await mobile.locator(".envelope-scene").evaluate(el => el.classList.contains("is-open"))) failures.push("Mobile letter did not open");
   await mobile.close();
